@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+
+    <!-- 配置spring创建容器时要扫描的包-->
+    <context:component-scan base-package="com.itxin.ServiceModel"/>
+
+
+
+    <!-- 配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--配置事务通知-->
+    <tx:advice id="advice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="find*" read-only="true"/>
+            <tx:method name="update*" propagation="SUPPORTS"/>
+            <tx:method name="save*" propagation="SUPPORTS"/>
+            <tx:method name="delete*" propagation="SUPPORTS"/>
+            <tx:method name="*" propagation="SUPPORTS"/>
+        </tx:attributes>
+    </tx:advice>
+    <!--配置通知-->
+    <bean id="aspect" class="com.itxin.Aspect.CacheAspect"></bean>
+
+
+    <!--配置切面-->
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* com.itxin.ServiceModel.*.*(..))"/>
+        <aop:advisor advice-ref="advice" pointcut-ref="pointcut"/>
+        <aop:aspect id="aspects" ref="aspect">
+            <aop:around method="RroundMethod" pointcut-ref="pointcut"/>
+        </aop:aspect>
+    </aop:config>
+
+
+
+</beans>
